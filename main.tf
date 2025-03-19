@@ -13,34 +13,42 @@ terraform {
 #  password = abc123
 
 
-data "azurerm_resource_group" "example" {
-  name = "1-9c4ff680-playground-sandbox"
+provider "azurerm" {
+  features {}
 }
 
+# Create a resource group
+resource "azurerm_resource_group" "example" {
+  name     = "example-resources"
+  location = "East US"
+}
 
-
-resource "azurerm_virtual_network" "main" {
-  name                = "test-network"
+# Create a virtual network
+resource "azurerm_virtual_network" "example" {
+  name                = "example-vnet"
   address_space       = ["10.0.0.0/16"]
-  location            = data.azurerm_resource_group.example.location
-  resource_group_name = data.azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
 }
 
-resource "azurerm_subnet" "internal" {
-  name                 = "internal"
-  resource_group_name  = data.azurerm_resource_group.name
-  virtual_network_name = azurerm_virtual_network.main.name
+# Create a subnet in the virtual network
+resource "azurerm_subnet" "example" {
+  name                 = "example-subnet"
+  resource_group_name  = azurerm_resource_group.example.name
+  virtual_network_name = azurerm_virtual_network.example.name
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-
+# Create a public IP for the VM
 resource "azurerm_public_ip" "example" {
-  name                = "acceptanceTestPublicIp1"
-  resource_group_name = data.azurerm_resource_group.example.name
-  location            = data.azurerm_resource_group.example.location
-  allocation_method   = "Static"
+  name                         = "example-public-ip"
+  location                     = azurerm_resource_group.example.location
+  resource_group_name          = azurerm_resource_group.example.name
+  allocation_method            = "Dynamic"
+  domain_name_label            = "examplevm-${random_id.random_id.hex}"
 }
 
+# Create a network interface for the VM
 resource "azurerm_network_interface" "main" {
   name                = "test-nic"
   location            = data.azurerm_resource_group.example.location
@@ -54,40 +62,17 @@ resource "azurerm_network_interface" "main" {
   }
 }
 
-resource "azurerm_virtual_machine" "main" {
-  name                  = "test-vm"
-  location              = data.azurerm_resource_group.example.location
-  resource_group_name   = data.azurerm_resource_group.example.name
-  network_interface_ids = [azurerm_network_interface.main.id]
-  vm_size               = "Standard_DS1_v2"
-
-  # Uncomment this line to delete the OS disk automatically when deleting the VM
-  # delete_os_disk_on_termination = true
-
-  # Uncomment this line to delete the data disks automatically when deleting the VM
-  # delete_data_disks_on_termination = true
-
-  storage_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts-gen2"
-    version   = "latest"
-  }
-  storage_os_disk {
-    name              = "myosdisk1"
-    caching           = "ReadWrite"
-    create_option     = "FromImage"
-    managed_disk_type = "Standard_LRS"
-  }
-  os_profile {
-    computer_name  = "hostname"
-    admin_username = "testadmin"
-    admin_password = "Welcome@12345"
-  }
-  os_profile_linux_config {
-    disable_password_authentication = false
-  }
-  tags = {
-    environment = "staging"
-  }
+ 
+# Generate a random ID for uniqueness (optional, for domain name)
+resource "random_id" "random_id" {
+  byte_length = 8
 }
+
+# Define the SSH key for authentication
+resource "azurerm_ssh_key" "example" {
+  name                 = "example-ssh-key"
+  public_key           = file("~/.ssh/id_rsa.pub")  # Specify your public key file path
+  resource_group_name  = azurerm_resource_group.example.name
+}
+
+# Create the Ubuntu VM with SSH key authen
