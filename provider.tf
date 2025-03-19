@@ -27,7 +27,11 @@ resource "azurerm_storage_account" "sg-account" {
   location                 = azurerm_resource_group.sg-account.location
   account_tier             = "Standard"
   account_replication_type = "GRS"
+  shared_access_key_enabled = true
+  
+
 #   min_tls_version = "TLS1_2"
+
 
   tags = {
     environment = "staging"
@@ -39,3 +43,5 @@ resource "azurerm_storage_container" "sg-account" {
   storage_account_id    = azurerm_storage_account.sg-account.id
   container_access_type = "private" 
 }
+
+  
