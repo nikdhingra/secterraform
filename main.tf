@@ -9,3 +9,6 @@ terraform {
     sas_token = "sv=2022-11-02&ss=bfqt&srt=co&sp=rwdlacupiytfx&se=2025-02-28T13:44:03Z&st=2025-02-28T05:44:03Z&spr=https&sig=Uqv7EEYdSiqmfmBh47mMnvnA%2FpELAOJXU1urSxWN1xc%3D"
   }
 }
+
+access_key = "iiiiqiiq"
+admin_password = "kkkwkkk"
