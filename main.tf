@@ -10,4 +10,4 @@ terraform {
   }
 }
 
-kkk= ooooo
+#  password = abc123
