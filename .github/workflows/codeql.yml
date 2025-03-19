@@ -1,0 +1,44 @@
+name: Infra pipeline
+ 
+on:
+  push:
+    branches:
+      - main
+ 
+env:
+  AZURE_REGION: us-east-2
+ 
+jobs:
+  CI:  
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: CI job started
+        run: |
+          echo "CI job started"
+ 
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: tflint
+        run: |
+          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+          tflint --init
+          tflint -f compact | tee report-tflint.txt 
+        continue-on-error: true
+ 
+      - name: CheckOV
+        run: |
+          sudo apt-get install -y python3-pip
+          pip install checkov
+          export PATH=$PATH:/home/ubuntu/.local/bin
+          checkov --directory ./ --skip-check CKV_AWS_130,CKV_AWS_230,CKV_AWS_229,CKV_AWS_232,CKV_AWS_231,CKV_AWS_12,CKV_AWS_11,CKV_AWS_1,CKV_AWS_18,CKV_AWS_144,CKV2_AWS_11,CKV2_AWS_1,CKV2_AWS_12,CKV2_AWS_6,CKV_AWS_19,CKV_AWS_145,CKV_AWS_21 | tee report-checkov.txt 
+        continue-on-error: true
+ 
+      - name: tfsec
+        run: |
+          git config --global url."https://${{ secrets.GH_TOKEN }}@github.kyndryl.net".insteadOf "https://github.kyndryl.net"
+          sudo curl -L -o /usr/local/bin/tfsec https://github.com/liamg/tfsec/releases/latest/download/tfsec-linux-amd64
+          sudo chmod +x /usr/local/bin/tfsec
+          tfsec . | tee report-tfsec.txt  
+        continue-on-error: true
