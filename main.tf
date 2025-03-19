@@ -10,5 +10,3 @@ terraform {
   }
 }
 
-access_key = "iiiiqiiq"
-admin_password = "kkkwkkk"
