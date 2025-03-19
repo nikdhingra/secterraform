@@ -63,7 +63,7 @@ resource "azurerm_network_interface" "main" {
 }
 
  
-# Generate a random ID for uniqueness (optional, for domain name)
+# Generate a random ID for uniqueness (optional, for domain name).
 resource "random_id" "random_id" {
   byte_length = 8
 }
