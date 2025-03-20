@@ -30,7 +30,7 @@ resource "azurerm_storage_account" "sg-account" {
   shared_access_key_enabled = true
   
 
-  #min_tls_version = "TLS1_2"
+  min_tls_version = "TLS1_2"
 
 
   tags = {
